@@ -26,5 +26,8 @@ dev_dependencies:
 flutter:
 
   uses-material-design: true
+  assets:
+    - assets/head.png
+    - assets/tail.png
 
 
