@@ -86,7 +86,8 @@ Each level has unique requirements:
 ## Screenshots
 
 ### Home Screen
-![Home Screen](assets/homeP.png)
+<img src="assets/homeP.png" width="300" alt="Home Screen">
+
 - Main game menu
 - Level selection
 - Score display
@@ -94,7 +95,8 @@ Each level has unique requirements:
 - Progress tracking
 
 ### Game Screen
-![Game Play](assets/gameP.png)
+<img src="assets/gameP.png" width="300" alt="Game Play">
+
 - Coin flip animation
 - Level requirements
 - Progress tracking
@@ -102,14 +104,16 @@ Each level has unique requirements:
 - Score system
 
 ### Debug Mode
-![Debug Mode](assets/debug.png)
+<img src="assets/debug.png" width="300" alt="Debug Mode">
+
 - Testing interface
 - Game mechanics verification
 - Performance monitoring
 - State inspection
 
 ### Reset Progress
-![Reset Progress](assets/reset.png)
+<img src="assets/reset.png" width="300" alt="Reset Progress">
+
 - Progress reset confirmation
 - User data management
 - Clean state initialization
