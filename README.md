@@ -79,9 +79,3 @@ flip_coin/
 6. Receives win/loss feedback
 7. Can retry or return to levels
 
-## Future Enhancements
-- Score tracking system
-- Level unlocking mechanism
-- Sound effects
-- Achievements system
-- Multiplayer mode
