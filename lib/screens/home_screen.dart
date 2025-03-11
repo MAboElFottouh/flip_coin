@@ -34,14 +34,24 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  int calculateTotalScore() {
+    return progress.fold(0, (sum, level) {
+      switch (level.stars) {
+        case 1:
+          return sum + 10;
+        case 2:
+          return sum + 30;
+        case 3:
+          return sum + 70;
+        default:
+          return sum;
+      }
+    });
+  }
+
   Widget _buildLevelButton(LevelProgress levelProgress) {
     return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
       child: Container(
-        height: 80,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
@@ -70,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
           } : null,
           borderRadius: BorderRadius.circular(12),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             child: Row(
               children: [
                 Column(
@@ -85,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    if (levelProgress.isPlayed) ...[
+                    if (levelProgress.isPlayed && levelProgress.bestAttempts > 0) ...[
                       const SizedBox(height: 4),
                       Text(
                         'Best: ${levelProgress.bestAttempts} attempts',
@@ -121,11 +131,100 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildScoreRulesCard() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.blue.shade300,
+            Colors.blue.shade500,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Scoring System',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    'Score: ${calculateTotalScore()}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildScoreRule('⭐⭐⭐', '70 pts'),
+                _buildScoreRule('⭐⭐', '30 pts'),
+                _buildScoreRule('⭐', '10 pts'),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildScoreRule(String stars, String points) {
+    return Column(
+      children: [
+        Text(
+          stars,
+          style: const TextStyle(fontSize: 16),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          points,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Welcome, ${widget.username}'),
+        title: Text(widget.username),
         actions: [
           // Reset button
           IconButton(
@@ -207,14 +306,21 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: ListView.builder(
-          itemCount: progress.length,
-          itemBuilder: (context, index) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12.0),
-              child: _buildLevelButton(progress[index]),
-            );
-          },
+        child: Column(
+          children: [
+            _buildScoreRulesCard(),
+            Expanded(
+              child: ListView.builder(
+                itemCount: progress.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: _buildLevelButton(progress[index]),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
