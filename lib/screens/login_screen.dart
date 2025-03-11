@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/auth_service.dart';
 import 'home_screen.dart';
-
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,10 +11,24 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _usernameController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final _authService = AuthService();
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkLastUser();
+  }
+
+  Future<void> _checkLastUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lastUser = prefs.getString('last_user');
+    if (lastUser != null) {
+      _usernameController.text = lastUser;
+    }
+  }
 
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
@@ -23,6 +37,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final username = _usernameController.text.trim();
+
+      // Save last logged in user
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('last_user', username);
 
       // Try to login
       final success = await _authService.login(username);

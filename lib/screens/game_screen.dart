@@ -6,10 +6,12 @@ import '../models/level_requirements.dart';
 
 class GameScreen extends StatefulWidget {
   final int level;
+  final String username;
 
   const GameScreen({
     super.key,
     required this.level,
+    required this.username,
   });
 
   @override
@@ -24,7 +26,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
   String? result;
   int attempts = 0;
   int wins = 0;  // Add this variable
-  late final ProgressService _progressService;
+  late ProgressService _progressService;
   final int requiredWins = 3; // Each level needs 3 wins
   bool levelCompleted = false;
   late final LevelRequirement levelRequirement;
@@ -69,8 +71,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
   }
 
   Future<void> _initializeServices() async {
-    final prefs = await SharedPreferences.getInstance();
-    _progressService = ProgressService(prefs);
+    _progressService = await ProgressService.create(widget.username);
   }
 
   @override

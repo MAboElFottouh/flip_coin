@@ -27,8 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _initializeService() async {
-    _progressService = await ProgressService.create();
-    await _progressService.initializeProgress();
+    _progressService = await ProgressService.create(widget.username); // Pass username
     setState(() {
       progress = _progressService.getProgress();
     });
@@ -68,7 +67,10 @@ class _HomeScreenState extends State<HomeScreen> {
             final shouldRefresh = await Navigator.push<bool>(
               context,
               MaterialPageRoute(
-                builder: (context) => GameScreen(level: levelProgress.level),
+                builder: (context) => GameScreen(
+                  level: levelProgress.level,
+                  username: widget.username,
+                ),
               ),
             );
             

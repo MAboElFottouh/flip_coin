@@ -3,77 +3,76 @@ import 'dart:convert';
 import '../models/level_progress.dart';
 
 class ProgressService {
-  static const String _progressKey = 'level_progress';
+  static const String _progressKeyPrefix = 'progress_';
   final SharedPreferences _prefs;
+  final String username;
 
-  ProgressService(this._prefs);
+  ProgressService._({
+    required SharedPreferences prefs,
+    required this.username,
+  }) : _prefs = prefs;
 
-  static Future<ProgressService> create() async {
+  static Future<ProgressService> create(String username) async {
     final prefs = await SharedPreferences.getInstance();
-    return ProgressService(prefs);
+    return ProgressService._(prefs: prefs, username: username);
   }
 
-  Future<void> initializeProgress() async {
-    if (_prefs.getString(_progressKey) == null) {
-      List<LevelProgress> progress = List.generate(10, (index) => 
-        LevelProgress(level: index + 1, isUnlocked: index == 0)
-      );
-      await saveProgress(progress);
-    }
-  }
-
-  Future<void> saveProgress(List<LevelProgress> progress) async {
-    final String json = jsonEncode(
-      progress.map((p) => p.toJson()).toList()
-    );
-    await _prefs.setString(_progressKey, json);
-  }
+  String get _userProgressKey => '${_progressKeyPrefix}$username';
 
   List<LevelProgress> getProgress() {
-    final String? json = _prefs.getString(_progressKey);
-    if (json == null) {
-      return List.generate(
+    final String? jsonString = _prefs.getString(_userProgressKey);
+    if (jsonString == null) {
+      // Create and save initial progress for new user
+      final initialProgress = List.generate(
         10,
         (index) => LevelProgress(
           level: index + 1,
           isUnlocked: index == 0,
+          stars: 0,
+          bestAttempts: 0,
+          attempts: 0,
         ),
       );
+      saveProgress(initialProgress);
+      return initialProgress;
     }
     
-    List<dynamic> list = jsonDecode(json);
-    return list.map((item) => LevelProgress.fromJson(item)).toList();
+    final List<dynamic> jsonList = json.decode(jsonString);
+    return jsonList.map((json) => LevelProgress.fromJson(json)).toList();
+  }
+
+  Future<void> saveProgress(List<LevelProgress> progress) async {
+    final String jsonString = json.encode(
+      progress.map((p) => p.toJson()).toList(),
+    );
+    await _prefs.setString(_userProgressKey, jsonString);
   }
 
   Future<void> updateLevelProgress(
     int level,
     int attempts,
     bool completed,
-    int newStars,
+    int stars,
     int wins,
   ) async {
-    List<LevelProgress> progress = getProgress();
-    final index = level - 1;
-    
-    if (index < 0 || index >= progress.length) return;
+    final progress = getProgress();
+    final levelIndex = level - 1;
 
-    // Only update if player got required wins
-    if (completed && wins >= 3) {
-      final currentProgress = progress[index];
-      
-      // Update only if new score is better
-      if (!currentProgress.isPlayed || newStars > currentProgress.stars || 
-          (newStars == currentProgress.stars && attempts < currentProgress.bestAttempts)) {
-        progress[index].attempts = attempts;
-        progress[index].stars = newStars;
-        progress[index].bestAttempts = attempts;
-      }
-      
-      progress[index].isPlayed = true;
+    if (levelIndex >= 0 && levelIndex < progress.length) {
+      final currentLevel = progress[levelIndex];
+      progress[levelIndex] = LevelProgress(
+        level: level,
+        isUnlocked: true,
+        stars: stars > currentLevel.stars ? stars : currentLevel.stars,
+        bestAttempts: completed && (currentLevel.bestAttempts == 0 || attempts < currentLevel.bestAttempts)
+            ? attempts
+            : currentLevel.bestAttempts,
+        attempts: attempts,
+      );
 
-      // Unlock next level if it exists
-      if (index + 1 < progress.length) {
-        progress[index + 1].isUnlocked = true;
+      // Unlock next level if completed
+      if (completed && levelIndex + 1 < progress.length) {
+        progress[levelIndex + 1] = progress[levelIndex + 1].copyWith(isUnlocked: true);
       }
 
       await saveProgress(progress);
@@ -81,8 +80,8 @@ class ProgressService {
   }
 
   Future<void> resetProgress() async {
-    await _prefs.remove(_progressKey);
-    await initializeProgress();
+    await _prefs.remove(_userProgressKey);
+    // Progress will be re-initialized on next getProgress call
   }
 
   String getDebugInfo() {

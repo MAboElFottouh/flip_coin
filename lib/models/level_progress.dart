@@ -1,35 +1,50 @@
 class LevelProgress {
   final int level;
-  int stars;
-  int attempts;
-  bool isUnlocked;
-  bool isPlayed;
-  int bestAttempts;
+  final bool isUnlocked;
+  final int stars;
+  final int bestAttempts;
+  final int attempts;
 
-  LevelProgress({
+  const LevelProgress({
     required this.level,
-    this.stars = 0,
-    this.attempts = 0,
-    this.isUnlocked = false,
-    this.isPlayed = false,
-    this.bestAttempts = 0,
+    required this.isUnlocked,
+    required this.stars,
+    required this.bestAttempts,
+    required this.attempts,
   });
+
+  // Add isPlayed getter
+  bool get isPlayed => bestAttempts > 0;
+
+  LevelProgress copyWith({
+    int? level,
+    bool? isUnlocked,
+    int? stars,
+    int? bestAttempts,
+    int? attempts,
+  }) {
+    return LevelProgress(
+      level: level ?? this.level,
+      isUnlocked: isUnlocked ?? this.isUnlocked,
+      stars: stars ?? this.stars,
+      bestAttempts: bestAttempts ?? this.bestAttempts,
+      attempts: attempts ?? this.attempts,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
     'level': level,
-    'stars': stars,
-    'attempts': attempts,
     'isUnlocked': isUnlocked,
-    'isPlayed': isPlayed,
+    'stars': stars,
     'bestAttempts': bestAttempts,
+    'attempts': attempts,
   };
 
   factory LevelProgress.fromJson(Map<String, dynamic> json) => LevelProgress(
-    level: json['level'] as int,
-    stars: json['stars'] as int? ?? 0,
-    attempts: json['attempts'] as int? ?? 0,
-    isUnlocked: json['isUnlocked'] as bool? ?? false,
-    isPlayed: json['isPlayed'] as bool? ?? false,
-    bestAttempts: json['bestAttempts'] as int? ?? 0,
+    level: json['level'],
+    isUnlocked: json['isUnlocked'],
+    stars: json['stars'],
+    bestAttempts: json['bestAttempts'],
+    attempts: json['attempts'],
   );
 }
